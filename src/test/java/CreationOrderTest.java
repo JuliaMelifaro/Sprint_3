@@ -1,3 +1,5 @@
+import io.qameta.allure.Step;
+import io.qameta.allure.junit4.DisplayName;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.junit.After;
@@ -5,10 +7,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import pojo.Order;
+import pojo.OrderTrack;
 
 import java.util.ArrayList;
 
-import static io.restassured.RestAssured.given;
+import static api.client.OrdersClient.*;
 import static org.hamcrest.Matchers.greaterThan;
 
  @RunWith(Parameterized.class)
@@ -40,18 +44,17 @@ public class CreationOrderTest {
     }
 
     @Test
+    @DisplayName("Creating order with different transport color - parameterized")
     public void createNewOrder(){
         Order order = new Order(color);
-        Response response = given().header("Content-Type","application/json").body(order)
-                .post("/api/v1/orders");
+        Response response = apiCreateOrder(order);
         response.then().statusCode(201).and()
                 .assertThat().body("track", greaterThan(0));
-        someTrack = response.body().as(OrderTrack.class);
+        someTrack = apiGetOrderTrack(response);
     }
 
     @After
     public void deletingTestData(){
-        given().header("Content-Type","application/json")
-                .put(("/api/v1/orders/cancel?track=" + someTrack.getTrack()));
+         apiDeleteOrder(someTrack);
     }
 }

@@ -1,3 +1,5 @@
+package pojo;
+
 public class LoginData {
     private int id;
 

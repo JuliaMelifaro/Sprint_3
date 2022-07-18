@@ -1,9 +1,12 @@
+import io.qameta.allure.Step;
+import io.qameta.allure.junit4.DisplayName;
 import io.restassured.RestAssured;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import pojo.Courier;
 
-import static io.restassured.RestAssured.given;
+import static api.client.CourierClient.*;
 import static org.hamcrest.Matchers.*;
 
 public class CourierLoginTest {
@@ -13,51 +16,46 @@ public class CourierLoginTest {
     public void setUp() {
         RestAssured.baseURI="http://qa-scooter.praktikum-services.ru";
         courierData = new Courier("Runner" + Math.random()*1000, "qwerty" + Math.random()*10);
-        given().header("Content-Type","application/json").body(courierData)
-                .post("/api/v1/courier");
+        apiCreateCourier(courierData);
     }
 
     @Test
+    @DisplayName("Login of existing courier")
     public void courierLoginSuccessful(){
-        given().header("Content-Type","application/json").body(courierData)
-                .post("/api/v1/courier");
-        given().header("Content-Type","application/json").body(courierData)
-                .post("/api/v1/courier/login").then().statusCode(200).and()
-                .assertThat().body("id", greaterThan(0));
+        apiCreateCourier(courierData);
+        apiLoginCourier(courierData).then().statusCode(200).and()
+              .assertThat().body("id", greaterThan(0));
     }
 
 
     @Test
+    @DisplayName("Trying to login without login")
     public void courierLoginWithoutLogin() {
         Courier courierWithoutLogin = new Courier(null, courierData.getPassword());
-        given().header("Content-Type","application/json").body(courierWithoutLogin)
-                .post("/api/v1/courier/login").then().statusCode(400).and()
+        apiLoginCourier(courierWithoutLogin).then().statusCode(400).and()
                 .assertThat().body("message", equalTo("Недостаточно данных для входа"));
     }
 
     @Test
+    @DisplayName("Trying to login without password")
     public void courierLoginWithoutPassword() {
         Courier courierWithoutPassword = new Courier(courierData.getLogin(), "");
-        given().header("Content-Type","application/json").body(courierWithoutPassword)
-                .post("/api/v1/courier/login").then().statusCode(400).and()
+        apiLoginCourier(courierWithoutPassword).then().statusCode(400).and()
                 .assertThat().body("message", equalTo("Недостаточно данных для входа"));
     }
 
 
     @Test
+    @DisplayName("Trying to login with not existing courier")
     public void courierLoginWrongData() {
         Courier courierDataWrong = new Courier("notExist" + Math.random()*2000, "qwerty" + Math.random()*10);
-        given().header("Content-Type", "application/json").body(courierDataWrong)
-                .post("/api/v1/courier/login").then().statusCode(404).and()
+        apiLoginCourier(courierDataWrong).then().statusCode(404).and()
                 .assertThat().body("message", equalTo("Учетная запись не найдена"));
     }
 
     @After
     public void deletingTestData(){
-        LoginData login = given().header("Content-Type","application/json").body(courierData)
-                .post("/api/v1/courier/login").body().as(LoginData.class);
-        given().header("Content-Type","application/json")
-                .delete("/api/v1/courier/" + login.getId());
+        apiDeleteCourier(courierData);
     }
 
 }

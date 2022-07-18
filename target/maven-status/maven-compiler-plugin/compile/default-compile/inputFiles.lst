@@ -1,4 +1,6 @@
-D:\GitHub\Sprint_3\Sprint_3\src\main\java\Order.java
-D:\GitHub\Sprint_3\Sprint_3\src\main\java\OrderTrack.java
-D:\GitHub\Sprint_3\Sprint_3\src\main\java\Courier.java
-D:\GitHub\Sprint_3\Sprint_3\src\main\java\LoginData.java
+D:\GitHub\Sprint3_v2\src\main\java\pojo\OrderTrack.java
+D:\GitHub\Sprint3_v2\src\main\java\pojo\LoginData.java
+D:\GitHub\Sprint3_v2\src\main\java\pojo\Courier.java
+D:\GitHub\Sprint3_v2\src\main\java\pojo\Order.java
+D:\GitHub\Sprint3_v2\src\main\java\api\client\OrdersClient.java
+D:\GitHub\Sprint3_v2\src\main\java\api\client\CourierClient.java

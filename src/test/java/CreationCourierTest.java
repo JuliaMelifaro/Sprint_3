@@ -1,9 +1,13 @@
+import io.qameta.allure.Step;
+import io.qameta.allure.junit4.DisplayName;
 import io.restassured.RestAssured;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import pojo.Courier;
 
-import static io.restassured.RestAssured.given;
+import static api.client.CourierClient.apiCreateCourier;
+import static api.client.CourierClient.apiDeleteCourier;
 import static org.hamcrest.CoreMatchers.equalTo;
 
 public class CreationCourierTest {
@@ -15,55 +19,51 @@ public class CreationCourierTest {
     }
 
     @Test
+    @DisplayName("Creating new courier with entering all parameters")
     public void createNewCourierAllParameters(){
         courierData = new Courier("Runner" + Math.random()*1000, "qwerty" + Math.random()*1000,
                 "Forest" + Math.random()*1000);
-        given().header("Content-Type","application/json").body(courierData)
-                .post("/api/v1/courier").then().statusCode(201).and()
+        apiCreateCourier(courierData).then().statusCode(201).and()
                 .assertThat().body("ok", equalTo(true));
     }
 
     @Test
+    @DisplayName("Trying to create courier by duplicating data")
     public void canCreateOnlyOriginalCourier(){
         courierData = new Courier("Runner" + Math.random()*1000, "qwerty" + Math.random()*1000,
                 "Forest" + Math.random()*1000);
-        given().header("Content-Type","application/json").body(courierData)
-                .post("/api/v1/courier");
-        given().header("Content-Type","application/json").body(courierData)
-                .post("/api/v1/courier").then().assertThat().body("code", equalTo(409)).and()
+        apiCreateCourier(courierData);
+        apiCreateCourier(courierData).then().assertThat().body("code", equalTo(409)).and()
                 .assertThat().body("message", equalTo("Этот логин уже используется. Попробуйте другой."));
     }
 
     @Test
+    @DisplayName("Creating new courier with entering only needed parameters")
     public void createNewCourierAOnlyNeededParameters() {
         courierData = new Courier("Runner" + Math.random()*1000, "qwerty" + Math.random()*1000);
-        given().header("Content-Type","application/json").body(courierData)
-                .post("/api/v1/courier").then().statusCode(201).and()
+        apiCreateCourier(courierData).then().statusCode(201).and()
                 .assertThat().body("ok", equalTo(true));
     }
 
     @Test
+    @DisplayName("Trying to create courier without login")
     public void creationCourierWithoutLogin(){
         courierData = new Courier(null, "qwerty" + Math.random()*1000);
-        given().header("Content-Type","application/json").body(courierData)
-                .post("/api/v1/courier").then().statusCode(400).and()
+        apiCreateCourier(courierData).then().statusCode(400).and()
                 .assertThat().body("message", equalTo("Недостаточно данных для создания учетной записи"));
     }
 
     @Test
+    @DisplayName("Trying to create courier without password")
     public void creationCourierWithoutPassword(){
         courierData = new Courier("Runner" + Math.random()*1000, "");
-        given().header("Content-Type","application/json").body(courierData)
-                .post("/api/v1/courier").then().statusCode(400).and()
+        apiCreateCourier(courierData).then().statusCode(400).and()
                 .assertThat().body("message", equalTo("Недостаточно данных для создания учетной записи"));
     }
 
     @After
     public void deletingTestData(){
-        LoginData login = given().header("Content-Type","application/json").body(courierData)
-                .post("/api/v1/courier/login").body().as(LoginData.class);
-        given().header("Content-Type","application/json")
-                .delete("/api/v1/courier/" + login.getId());
+        apiDeleteCourier(courierData);
     }
 
 }
